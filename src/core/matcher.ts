@@ -63,3 +63,21 @@ export function matchField(signals: Signals): Match | null {
 
   return best && best.score >= MIN_SCORE ? best : null;
 }
+
+/**
+ * Secenek metinleri (select option / radio etiketi) arasindan profil degerine uyanin indeksini bulur.
+ * Once tam esitlik, sonra kelime bazli icerme: kisa es anlamlilar ("k", "male") baska secenegin
+ * icinde yakalanmasin ("erkek", "female"). Bulunamazsa -1.
+ */
+export function pickOption(texts: string[], value: string, key: ProfileKey): number {
+  const target = normalize(value);
+  if (!target) return -1;
+  const hints = FIELD_DEFS[key].optionHints ?? {};
+  const hintList = hints[target] ?? hints[target.replace(/ /g, '')] ?? [];
+  const candidates = [target, ...hintList.map(normalize)].filter(Boolean);
+  const options = texts.map(normalize);
+
+  const exact = options.findIndex((t) => t && candidates.includes(t));
+  if (exact >= 0) return exact;
+  return options.findIndex((t) => t && candidates.some((c) => containsKeyword(t, c)));
+}

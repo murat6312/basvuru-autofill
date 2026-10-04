@@ -57,7 +57,7 @@ async function run(): Promise<void> {
       const record = value ? apply(el, override, value, radioGroups, 'kural') : null;
       if (record) {
         done.push(record);
-        highlight(el, true);
+        highlight(record.el, true);
         continue;
       }
     }
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
     if (record) {
       record.confident = match.score >= CONFIDENT_SCORE;
       (record.confident ? done : flagged).push(record);
-      highlight(el, record.confident);
+      highlight(record.el, record.confident);
     }
   }
 
@@ -104,6 +104,8 @@ function apply(el: HTMLElement, key: ProfileKey, value: string, radioGroups: Set
     radioGroups.add(el.name);
     const group = Array.from(document.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${CSS.escape(el.name)}"]`));
     ok = fillRadioGroup(group, value, key);
+    // Isaret, grubun ilk dugmesine degil secilen dugmeye konsun
+    if (ok) el = group.find((r) => r.checked) ?? el;
   } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
     ok = fillTextLike(el, el.type === 'date' ? toIsoDate(value) : value);
   }

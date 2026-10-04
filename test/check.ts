@@ -3,7 +3,7 @@
  * Gercek basvuru formlarindan (Lever, Greenhouse, Workday, Turkce kariyer sayfalari)
  * alinan etiketlerle sozlugu sinar.
  */
-import { matchField } from '../src/core/matcher';
+import { matchField, pickOption } from '../src/core/matcher';
 
 type Case = { label?: string; name?: string; placeholder?: string; autocomplete?: string; expect: string | null };
 
@@ -109,7 +109,34 @@ for (const c of cases) {
   }
 }
 
-console.log(`\nAlan tanima: ${pass}/${cases.length} dogru\n`);
+// --- Secenek esleme (select / radio): kisa es anlamlilar baska secenegin icinde yakalanmamali
+type OptionCase = { options: string[]; value: string; key: Parameters<typeof pickOption>[2]; expect: number };
+const optionCases: OptionCase[] = [
+  { options: ['Erkek', 'Kadın'], value: 'Kadın', key: 'gender', expect: 1 },
+  { options: ['Erkek', 'Kadın'], value: 'Erkek', key: 'gender', expect: 0 },
+  { options: ['Female', 'Male'], value: 'Erkek', key: 'gender', expect: 1 },
+  { options: ['Female', 'Male'], value: 'Kadın', key: 'gender', expect: 0 },
+  { options: ['Erkek / Male', 'Kadın / Female'], value: 'Kadın', key: 'gender', expect: 1 },
+  { options: ['Bay', 'Bayan'], value: 'Kadın', key: 'gender', expect: 1 },
+  { options: ['E', 'K'], value: 'Kadın', key: 'gender', expect: 1 },
+  { options: ['Seçiniz', 'Yapıldı', 'Muaf', 'Tecilli'], value: 'Muaf', key: 'militaryStatus', expect: 2 },
+  { options: ['Seçiniz', 'Completed', 'Exempt'], value: 'Yapıldı', key: 'militaryStatus', expect: 1 },
+  { options: ['Lise', 'Ön Lisans', 'Lisans', 'Yüksek Lisans'], value: 'Lisans', key: 'degree', expect: 2 },
+  { options: ['Lise', 'Ön Lisans', 'Lisans', 'Yüksek Lisans'], value: 'Yüksek Lisans', key: 'degree', expect: 3 },
+  { options: ['High school', "Bachelor's degree", "Master's degree"], value: 'Lisans', key: 'degree', expect: 1 },
+];
+let optionPass = 0;
+for (const c of optionCases) {
+  const got = pickOption(c.options, c.value, c.key);
+  if (got === c.expect) {
+    optionPass++;
+  } else {
+    failures.push(`  [${c.options.join(' | ')}] "${c.value}" -> beklenen: ${c.options[c.expect]}, gelen: ${c.options[got] ?? 'eslesme yok'}`);
+  }
+}
+
+console.log(`\nAlan tanima: ${pass}/${cases.length} dogru`);
+console.log(`Secenek esleme: ${optionPass}/${optionCases.length} dogru\n`);
 if (failures.length) {
   console.log('Basarisiz:');
   console.log(failures.join('\n'));

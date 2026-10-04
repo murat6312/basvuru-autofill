@@ -1,5 +1,4 @@
-import { FIELD_DEFS } from './dictionary';
-import { normalize } from './normalize';
+import { pickOption } from './matcher';
 import type { ProfileKey } from './types';
 
 /**
@@ -24,21 +23,12 @@ export function fillTextLike(el: HTMLInputElement | HTMLTextAreaElement, value: 
 
 /** <select> icin: profil degerini secenek metinleriyle esler (es anlamlilar dahil). */
 export function fillSelect(el: HTMLSelectElement, value: string, key: ProfileKey): boolean {
-  const target = normalize(value);
-  if (!target) return false;
-
-  const hints = FIELD_DEFS[key].optionHints ?? {};
-  const hintList = hints[target] ?? hints[target.replace(/ /g, '')] ?? [];
-  const candidates = [target, ...hintList.map(normalize)];
-
   const options = Array.from(el.options);
-  let found =
-    options.find((o) => candidates.some((c) => c && normalize(o.textContent ?? '') === c)) ??
-    options.find((o) => candidates.some((c) => c && normalize(o.textContent ?? '').includes(c))) ??
-    options.find((o) => candidates.some((c) => c && normalize(o.value) === c));
+  let index = pickOption(options.map((o) => o.textContent ?? ''), value, key);
+  if (index < 0) index = pickOption(options.map((o) => o.value), value, key);
 
-  if (!found) return false;
-  el.value = found.value;
+  if (index < 0) return false;
+  el.value = options[index].value;
   el.dispatchEvent(new Event('input', { bubbles: true }));
   el.dispatchEvent(new Event('change', { bubbles: true }));
   return true;
@@ -46,20 +36,10 @@ export function fillSelect(el: HTMLSelectElement, value: string, key: ProfileKey
 
 /** Radio gruplarinda etiketi profil degerine uyan secenegi isaretler. */
 export function fillRadioGroup(radios: HTMLInputElement[], value: string, key: ProfileKey): boolean {
-  const target = normalize(value);
-  if (!target) return false;
-  const hints = FIELD_DEFS[key].optionHints ?? {};
-  const candidates = [target, ...(hints[target] ?? []).map(normalize)];
-
-  for (const radio of radios) {
-    const text = normalize(labelTextFor(radio));
-    if (!text) continue;
-    if (candidates.some((c) => c && (text === c || text.includes(c)))) {
-      radio.click();
-      return radio.checked;
-    }
-  }
-  return false;
+  const index = pickOption(radios.map(labelTextFor), value, key);
+  if (index < 0) return false;
+  radios[index].click();
+  return radios[index].checked;
 }
 
 export function labelTextFor(el: Element): string {
