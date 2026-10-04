@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Başvuru Autofill — Turkish form filler"
+  },
+  "extDesc": {
+    "message": "Fills application and sign-up forms from your saved profile. Understands Turkish field labels; data stays on your device."
+  },
+  "actionTitle": {
+    "message": "Başvuru Autofill"
+  },
+  "commandFill": {
+    "message": "Fill the form on this page"
+  }
+}

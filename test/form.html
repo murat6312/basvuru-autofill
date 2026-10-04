@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Örnek başvuru formu — Başvuru Autofill testi</title>
+    <style>
+      body { font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 24px; max-width: 760px; }
+      fieldset { border: 1px solid #ccc; border-radius: 8px; margin-bottom: 16px; padding: 12px 16px; }
+      label { display: block; margin-bottom: 10px; font-size: 13px; }
+      input, select, textarea { display: block; width: 100%; box-sizing: border-box; padding: 6px 8px; margin-top: 3px; font: inherit; }
+      .row { display: flex; gap: 12px; }
+      .row > label { flex: 1; }
+      button { font: inherit; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+      .note { background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 12px; border-radius: 8px; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <h1>Örnek başvuru formu</h1>
+    <p class="note">
+      Bu sayfa eklentiyi denemek içindir. Eklenti yüklüyken <b>Alt+Shift+F</b> ile doldurun.
+      Eklentiyi kurmadan mantığı görmek için sayfanın altındaki demo düğmesini kullanın.
+    </p>
+
+    <fieldset>
+      <legend>English (Greenhouse/Lever tarzı)</legend>
+      <div class="row">
+        <label>First Name * <input type="text" name="first_name" /></label>
+        <label>Last Name * <input type="text" name="last_name" /></label>
+      </div>
+      <label>Email <input type="email" name="email" autocomplete="email" /></label>
+      <label>Phone <input type="tel" name="phone" /></label>
+      <label>LinkedIn URL <input type="text" name="urls[LinkedIn]" /></label>
+      <label><input type="text" name="urls[GitHub]" placeholder="GitHub" /></label>
+      <label>Current Company <input type="text" name="company" /></label>
+      <label>Years of experience <input type="text" name="exp" /></label>
+      <label>Expected salary <input type="text" name="salary" /></label>
+      <label>Cover letter <textarea name="cover"></textarea></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Türkçe kariyer sayfası</legend>
+      <div class="row">
+        <label>Adınız <input type="text" id="tr-ad" /></label>
+        <label>Soyadınız <input type="text" id="tr-soyad" /></label>
+      </div>
+      <label>E-posta Adresiniz <input type="text" id="tr-mail" /></label>
+      <label>Cep Telefonu <input type="text" id="tr-tel" /></label>
+      <label>T.C. Kimlik No <input type="text" id="tr-tckn" /></label>
+      <label>Doğum Tarihi <input type="date" id="tr-dogum" /></label>
+      <label>Adres <input type="text" id="tr-adres" /></label>
+      <div class="row">
+        <label>İl <input type="text" id="tr-il" /></label>
+        <label>İlçe <input type="text" id="tr-ilce" /></label>
+        <label>Posta Kodu <input type="text" id="tr-posta" /></label>
+      </div>
+      <label>Askerlik Durumu
+        <select id="tr-askerlik">
+          <option value="">Seçiniz</option>
+          <option>Yapıldı</option>
+          <option>Muaf</option>
+          <option>Tecilli</option>
+        </select>
+      </label>
+      <label>Öğrenim Durumu
+        <select id="tr-ogrenim">
+          <option value="">Seçiniz</option>
+          <option>Lise</option>
+          <option>Ön Lisans</option>
+          <option>Lisans</option>
+          <option>Yüksek Lisans</option>
+        </select>
+      </label>
+      <label>Mezun Olduğunuz Üniversite <input type="text" id="tr-okul" /></label>
+      <label>Bölüm <input type="text" id="tr-bolum" /></label>
+      <label>Mezuniyet Yılı <input type="text" id="tr-mezun" /></label>
+      <label>Maaş Beklentisi <input type="text" id="tr-maas" /></label>
+      <label>İşe Başlayabileceğiniz Tarih <input type="text" id="tr-baslama" /></label>
+      <fieldset>
+        <legend>Cinsiyet</legend>
+        <label><input type="radio" name="cinsiyet" value="e" /> Erkek</label>
+        <label><input type="radio" name="cinsiyet" value="k" /> Kadın</label>
+      </fieldset>
+      <label>Neden bu pozisyona başvuruyorsunuz? <textarea id="tr-neden"></textarea></label>
+      <label>Şifre (doldurulmamalı) <input type="password" id="tr-sifre" /></label>
+      <label><input type="checkbox" id="tr-kvkk" /> KVKK metnini okudum (işaretlenmemeli)</label>
+    </fieldset>
+
+    <button id="demo" type="button">Demo veriyle doldur (eklenti kurmadan test)</button>
+
+    <script>
+      // Yalnizca bu test sayfasi icin: chrome.storage yerine sahte veri koyup dist/content.js'i calistirir.
+      // ?auto=1 ile acilirsa (ekran goruntusu uretimi) kendiliginden calisir.
+      if (new URLSearchParams(location.search).has('auto')) {
+        addEventListener('load', () => setTimeout(() => document.getElementById('demo').click(), 150));
+      }
+      document.getElementById('demo').addEventListener('click', () => {
+        window.chrome = {
+          runtime: { sendMessage: async () => {} },
+          storage: {
+            local: {
+              set: async () => {},
+              get: async () => ({
+                settings: {
+                  version: 2,
+                  activeProfileId: 'demo',
+                  overrides: [],
+                  cv: null,
+                  profiles: [{ id: 'demo', name: 'Demo', values: {
+                    firstName: 'Ayşe Nur', lastName: 'Yılmaz', fullName: '',
+                    email: 'ornek@mail.com', phone: '+90 555 111 22 33',
+                    address: 'Örnek Mah. Test Sok. No:1', city: 'İstanbul', district: 'Kadıköy',
+                    postalCode: '34000', country: 'Türkiye',
+                    linkedin: 'https://linkedin.com/in/ornek', github: 'https://github.com/ornek', website: '',
+                    birthDate: '12.05.1999', tckn: '11111111110', gender: 'Erkek', nationality: 'T.C.',
+                    militaryStatus: 'Yapıldı', drivingLicence: 'B',
+                    currentTitle: 'Android Developer', currentCompany: 'Örnek A.Ş.', experienceYears: '3',
+                    salaryExpectation: '120.000 TL', noticePeriod: 'Hemen', workAuthorization: 'Evet',
+                    school: 'Ankara Üniversitesi', degree: 'Lisans', fieldOfStudy: 'Bilgisayar Mühendisliği',
+                    graduationYear: '2024', summary: 'Kısa özet.', coverLetter: 'Ön yazı metni.',
+                    iban: '', taxNumber: ''
+                  } }],
+                  answers: [
+                    { question: 'Neden bu pozisyona başvuruyorsunuz?', answer: 'Ödeme sistemlerinde 3 yıllık deneyimim bu pozisyonla birebir örtüşüyor.' }
+                  ]
+                }
+              })
+            }
+          }
+        };
+        const s = document.createElement('script');
+        s.src = '../dist/content.js?' + Date.now();
+        document.body.appendChild(s);
+      });
+    </script>
+  </body>
+</html>

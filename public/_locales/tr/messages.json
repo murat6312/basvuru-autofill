@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Başvuru Autofill — Türkçe form doldurucu"
+  },
+  "extDesc": {
+    "message": "Başvuru ve kayıt formlarını kayıtlı bilgilerinizle tek tuşta doldurur. Türkçe alanları tanır, veriler cihazınızda kalır."
+  },
+  "actionTitle": {
+    "message": "Başvuru Autofill"
+  },
+  "commandFill": {
+    "message": "Bu sayfadaki formu doldur"
+  }
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root { color-scheme: light dark; }
+      body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 14px; width: 270px; }
+      h1 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+      h1 img { width: 18px; height: 18px; }
+      select, button { font: inherit; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid rgba(128,128,128,.45); background: transparent; color: inherit; }
+      button.primary { background: #16a34a; border-color: #16a34a; color: #fff; font-weight: 600; cursor: pointer; margin-top: 8px; }
+      button.primary:disabled { opacity: .6; cursor: default; }
+      p { margin: 10px 0 0; font-size: 12.5px; }
+      .muted { opacity: .7; }
+      .row { display: flex; gap: 6px; align-items: center; justify-content: space-between; font-size: 12px; margin-top: 12px; }
+      a { color: inherit; }
+      kbd { border: 1px solid rgba(128,128,128,.5); border-radius: 4px; padding: 1px 5px; font-size: 11px; }
+    </style>
+  </head>
+  <body>
+    <h1><img src="icons/icon32.png" alt="" /> Başvuru Autofill</h1>
+    <select id="profile" title="Aktif profil"></select>
+    <button class="primary" id="fill">Bu sayfayı doldur</button>
+    <p id="result" class="muted">Gönder tuşuna her zaman siz basarsınız.</p>
+    <p id="cv" class="muted"></p>
+    <div class="row">
+      <a href="#" id="options">Ayarlar</a>
+      <span class="muted">Kısayol: <kbd>Alt+Shift+F</kbd></span>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

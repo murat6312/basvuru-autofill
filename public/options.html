@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Başvuru Autofill — Bilgilerim</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px; max-width: 920px; }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      p.sub { margin: 0 0 20px; opacity: .78; }
+      fieldset { border: 1px solid rgba(128,128,128,.35); border-radius: 10px; margin: 0 0 18px; padding: 14px 16px 18px; }
+      legend { font-weight: 600; padding: 0 6px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px 16px; }
+      label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+      input, textarea, button, select { font: inherit; padding: 7px 9px; border-radius: 7px; border: 1px solid rgba(128,128,128,.45); background: transparent; color: inherit; }
+      textarea { min-height: 88px; resize: vertical; }
+      .wide { grid-column: 1 / -1; }
+      .bar { position: sticky; bottom: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px 0; background: Canvas; border-top: 1px solid rgba(128,128,128,.25); }
+      button { cursor: pointer; }
+      button.primary { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 600; }
+      button.danger { border-color: #dc2626; color: #dc2626; }
+      #status { font-size: 13px; opacity: .85; }
+      .qa { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 8px; margin-bottom: 8px; }
+      .hint { font-size: 12px; opacity: .72; margin: 6px 0 0; }
+      .profiles { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .rules { display: grid; gap: 6px; font-size: 13px; }
+      .rule { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid rgba(128,128,128,.28); border-radius: 7px; }
+      code { font-size: 12px; opacity: .85; }
+      #consent { position: fixed; inset: 0; background: rgba(15,23,42,.72); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+      #consent.show { display: flex; }
+      #consentBox { background: Canvas; color: CanvasText; max-width: 560px; border-radius: 14px; padding: 22px 24px; box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+      #consentBox h2 { margin: 0 0 10px; font-size: 17px; }
+      #consentBox ul { margin: 10px 0; padding-left: 18px; font-size: 14px; }
+      #consentBox li { margin-bottom: 5px; }
+      #consentAccept { margin-top: 6px; }
+    </style>
+  </head>
+  <body>
+    <div id="consent">
+      <div id="consentBox">
+        <h2>Verileriniz cihazınızda kalır</h2>
+        <p style="font-size:14px;margin:0">
+          Bu eklentiyi kullanmak için ad, adres, telefon, TC kimlik numarası gibi bilgileri ve
+          isterseniz özgeçmiş dosyanızı kendiniz girersiniz. Başlamadan önce şunları bilin:
+        </p>
+        <ul>
+          <li>Bu bilgiler <b>yalnızca bu tarayıcıda</b> saklanır (<code>chrome.storage.local</code>).</li>
+          <li>Hiçbir sunucuya <b>gönderilmez</b>; hesap, bulut senkronu, analiz aracı ve yapay zekâ servisi yoktur.</li>
+          <li>Geliştirici dahil hiç kimse bu verilere erişemez.</li>
+          <li>Eklenti formu <b>göndermez</b>, şifre alanı doldurmaz, şifre saklamaz.</li>
+          <li>İstediğiniz an "Tüm verileri sil" ile hepsini kaldırabilirsiniz.</li>
+        </ul>
+        <p style="font-size:13px;opacity:.8;margin:0 0 4px">
+          Ayrıntı: <a href="https://github.com/murat6312/basvuru-autofill/blob/main/PRIVACY.md" target="_blank" rel="noopener">Gizlilik Politikası</a>
+        </p>
+        <button class="primary" id="consentAccept" type="button">Anladım ve kabul ediyorum</button>
+      </div>
+    </div>
+    <h1>Başvuru Autofill</h1>
+    <p class="sub">
+      Bilgileriniz yalnızca bu tarayıcıda saklanır; hiçbir sunucuya gönderilmez.
+      Bir form sayfasında <b>Alt+Shift+F</b> ile doldurulur, <b>Gönder tuşuna her zaman siz basarsınız</b>.
+    </p>
+
+    <fieldset>
+      <legend>Profil</legend>
+      <div class="profiles">
+        <select id="profileSelect" style="min-width: 190px"></select>
+        <button id="addProfile" type="button">+ Yeni profil</button>
+        <button id="renameProfile" type="button">Yeniden adlandır</button>
+        <button id="deleteProfile" type="button" class="danger">Sil</button>
+      </div>
+      <p class="hint">Birden fazla profil tutabilirsiniz (ör. kendiniz ve eşiniz). Doldururken açılır pencereden seçersiniz.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Kişisel</legend>
+      <div class="grid">
+        <label>Ad <input data-key="firstName" /></label>
+        <label>Soyad <input data-key="lastName" /></label>
+        <label>Ad Soyad (boş bırakılırsa birleştirilir) <input data-key="fullName" /></label>
+        <label>Doğum tarihi (GG.AA.YYYY) <input data-key="birthDate" placeholder="12.05.1999" /></label>
+        <label>Cinsiyet <input data-key="gender" placeholder="Erkek" /></label>
+        <label>Uyruk <input data-key="nationality" placeholder="T.C." /></label>
+        <label>TC Kimlik No (isteğe bağlı) <input data-key="tckn" inputmode="numeric" />
+          <small style="opacity:.7;font-size:11.5px">Yalnızca form bu alanı istediğinde kullanılır. Boş bırakabilirsiniz.</small>
+        </label>
+        <label>Askerlik durumu <input data-key="militaryStatus" placeholder="Yapıldı / Muaf / Tecilli" /></label>
+        <label>Ehliyet <input data-key="drivingLicence" placeholder="B" /></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>İletişim</legend>
+      <div class="grid">
+        <label>E-posta <input data-key="email" type="email" /></label>
+        <label>Telefon <input data-key="phone" placeholder="+90 5xx xxx xx xx" /></label>
+        <label class="wide">Adres <input data-key="address" /></label>
+        <label>İl <input data-key="city" placeholder="İstanbul" /></label>
+        <label>İlçe <input data-key="district" /></label>
+        <label>Posta kodu <input data-key="postalCode" /></label>
+        <label>Ülke <input data-key="country" placeholder="Türkiye" /></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bağlantılar</legend>
+      <div class="grid">
+        <label>LinkedIn <input data-key="linkedin" /></label>
+        <label>GitHub <input data-key="github" /></label>
+        <label>Web sitesi / portfolyo <input data-key="website" /></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>İş</legend>
+      <div class="grid">
+        <label>Güncel unvan <input data-key="currentTitle" /></label>
+        <label>Güncel şirket <input data-key="currentCompany" /></label>
+        <label>Toplam deneyim (yıl) <input data-key="experienceYears" /></label>
+        <label>Maaş beklentisi <input data-key="salaryExpectation" /></label>
+        <label>İşe başlayabileceğiniz tarih <input data-key="noticePeriod" placeholder="Hemen" /></label>
+        <label>Çalışma izni <input data-key="workAuthorization" placeholder="Evet (T.C. vatandaşı)" /></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Eğitim</legend>
+      <div class="grid">
+        <label>Okul <input data-key="school" /></label>
+        <label>Derece <input data-key="degree" placeholder="Lisans" /></label>
+        <label>Bölüm <input data-key="fieldOfStudy" /></label>
+        <label>Mezuniyet yılı <input data-key="graduationYear" /></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Hazır metinler</legend>
+      <div class="grid">
+        <label class="wide">Kısa özet <textarea data-key="summary"></textarea></label>
+        <label class="wide">Ön yazı <textarea data-key="coverLetter"></textarea></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Diğer</legend>
+      <div class="grid">
+        <label>IBAN <input data-key="iban" /></label>
+        <label>Vergi no <input data-key="taxNumber" /></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Özgeçmiş dosyası</legend>
+      <p class="hint">Formlardaki dosya alanına otomatik eklenir. Dosya da yalnızca bu bilgisayarda saklanır (en fazla 5 MB).</p>
+      <div class="profiles">
+        <input type="file" id="cvInput" accept=".pdf,.doc,.docx" />
+        <button id="cvRemove" type="button" class="danger">Kaldır</button>
+      </div>
+      <p class="hint" id="cvState"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Cevap bankası</legend>
+      <p class="hint">Formlarda tekrar eden açık uçlu sorular. Soru metni birebir aynı olmasa da benzer sorularda eşleşir.</p>
+      <div id="answers"></div>
+      <button id="addAnswer" type="button">+ Soru ekle</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Öğretilen alanlar</legend>
+      <p class="hint">
+        Bir sayfada doldurma bittikten sonra çıkan bildirimdeki <b>Eşleştir</b> düğmesiyle
+        "bu alan şu bilgidir" diye öğrettiğiniz kurallar burada listelenir.
+      </p>
+      <div class="rules" id="rules"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>İzinler ve gizlilik</legend>
+      <p class="hint">
+        Bazı şirket sayfaları formu başka bir alan adından gömülü çerçevede gösterir (ör. Greenhouse).
+        Bu çerçevelerde de doldurabilmek için ek izin gerekir.
+      </p>
+      <button id="grant" type="button">Tüm sitelerde çerçeve desteğini aç</button>
+      <span id="permState" class="hint"></span>
+      <p class="hint">
+        Eklenti hiçbir veriyi sunucuya göndermez, analiz aracı kullanmaz, şifre saklamaz,
+        formu göndermez ve linkedin.com üzerinde hiç çalışmaz.
+      </p>
+    </fieldset>
+
+    <div class="bar">
+      <button class="primary" id="save" type="button">Kaydet</button>
+      <button id="export" type="button">JSON dışa aktar</button>
+      <button id="import" type="button">JSON içe aktar</button>
+      <button id="wipe" type="button" class="danger">Tüm verileri sil</button>
+      <span id="status"></span>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

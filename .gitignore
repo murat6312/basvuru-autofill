@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.tmp/
+*.log
+basvuru-autofill.zip
+store-assets/*.png
+!store-assets/promo-440x280.png
